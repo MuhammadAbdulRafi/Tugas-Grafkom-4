@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tugas 2: Lighting Interaktif — WebGL</title>
+    <style>
+        :root{--bg:#22313f;--panel:#2c3e50;--text:#ecf0f1;--muted:#34495e;}
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--text);}
+        h1{text-align:center;font-weight:700;margin:18px 8px 12px;}
+        .main-container{display:flex;flex-wrap:nowrap;align-items:flex-start;gap:22px;padding:16px 20px 28px;max-width:1400px;margin:0 auto;}
+        .canvas-container{flex:1 1 auto;min-width:520px;background:rgba(0,0,0,.12);border:2px solid var(--muted);border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.25) inset;padding:10px;}
+        canvas{display:block;width:100%;height:auto;background:#e9ecef;border-radius:8px;}
+        .controls{width:320px;flex:0 0 320px;background:var(--panel);border-radius:10px;padding:16px 14px;box-shadow:0 8px 18px rgba(0,0,0,.25);}
+        .control-group{margin-bottom:14px;}
+        label{display:block;font-size:14px;margin-bottom:6px;}
+        input[type="range"]{width:100%;cursor:pointer;}
+        input[type="color"]{width:50px;height:30px;padding:2px;border:1px solid var(--muted);cursor:pointer;}
+        button{width:100%;padding:10px 12px;margin-top:10px;border:0;border-radius:8px;font-weight:600;cursor:pointer;background:#3498db;color:white;}
+        button + button{background:#16a085;}
+        .side-column{width:300px;flex:0 0 300px;display:flex;flex-direction:column;gap:14px;}
+        .nrp-card{background:var(--muted);padding:12px 14px;border-radius:10px;box-shadow:0 8px 18px rgba(0,0,0,.25);}
+        .photo-container{display:flex;flex-direction:column;gap:12px;}
+        .photo-container img{width:100%;height:auto;display:block;border:2px solid var(--muted);border-radius:8px;box-shadow:0 6px 14px rgba(0,0,0,.3);background:#111;}
+        hr { border: 1px solid var(--muted); margin: 20px 0; }
+        .radio-group label { display: inline-block; margin-right: 15px; }
+        .color-control{display:flex;align-items:center;gap:10px;}
+    </style>
+</head>
+<body>
+    <h1>Rambu Dilarang Parkir — WebGL Interaktif</h1>
+    <div class="main-container">
+        <div class="canvas-container">
+            <canvas id="glCanvas" width="600" height="600">Browser Anda tidak mendukung canvas.</canvas>
+        </div>
+        <div class="controls">
+             <div class="control-group">
+                <label>Tipe Proyeksi</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="projection" value="perspective" checked> Perspektif</label>
+                    <label><input type="radio" name="projection" value="orthographic"> Ortografik</label>
+                </div>
+            </div>
+            <hr>
+            <div class="control-group">
+                <label for="camX">Posisi Kamera X</label>
+                <input type="range" id="camX" min="-10" max="10" value="0" step="0.1">
+            </div>
+            <div class="control-group">
+                <label for="camY">Posisi Kamera Y</label>
+                <input type="range" id="camY" min="-10" max="10" value="1" step="0.1">
+            </div>
+            <div class="control-group">
+                <label for="camZ">Posisi Kamera Z (Zoom)</label>
+                <input type="range" id="camZ" min="2" max="20" value="5" step="0.1">
+            </div>
+            <hr>
+            <div class="control-group">
+                <label for="rotX">Rotasi Objek X</label>
+                <input type="range" id="rotX" min="-180" max="180" value="0" step="1">
+            </div>
+            <div class="control-group">
+                <label for="rotY">Rotasi Objek Y</label>
+                <input type="range" id="rotY" min="-180" max="180" value="0" step="1">
+            </div>
+            <div class="control-group">
+                <label for="rotZ">Rotasi Objek Z</label>
+                <input type="range" id="rotZ" min="-180" max="180" value="0" step="1">
+            </div>
+            <hr>
+            
+            <h3>Kontrol Pencahayaan</h3>
+            <div class="control-group">
+                <label for="lightX">Posisi Cahaya X</label>
+                <input type="range" id="lightX" min="-10" max="10" value="2.0" step="0.1">
+            </div>
+             <div class="control-group">
+                <label for="lightY">Posisi Cahaya Y</label>
+                <input type="range" id="lightY" min="-10" max="10" value="3.0" step="0.1">
+            </div>
+             <div class="control-group">
+                <label for="lightZ">Posisi Cahaya Z</label>
+                <input type="range" id="lightZ" min="-10" max="10" value="4.0" step="0.1">
+            </div>
+            <div class="control-group color-control">
+                <label for="ambientColor">Ambient</label>
+                <input type="color" id="ambientColor" value="#333333">
+            </div>
+            <div class="control-group color-control">
+                <label for="diffuseColor">Diffuse</label>
+                <input type="color" id="diffuseColor" value="#FFFFFF">
+            </div>
+            <div class="control-group color-control">
+                <label for="specularColor">Specular</label>
+                <input type="color" id="specularColor" value="#FFFFFF">
+            </div>
+            <button id="resetView">Reset All</button>
+            <button id="autoRotate">Start Auto Rotate</button>
+        </div>
+        <div class="side-column">
+            <div class="nrp-card">
+                <h3>NRP</h3>
+                <ol>
+                    <li>Muhammad Farrel Fathin Wibowo — 5025231233</li>
+                    <li>Raihan Albar Wijaya — 5025231227</li>
+                </ol>
+            </div>
+            <div class="photo-container">
+                <img src="nopark_1.jpeg" alt="Foto Objek 1">
+                <img src="nopark_2.jpeg" alt="Foto Objek 2">
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
+    <script src="shader.js"></script>
+    <script src="jsnya.js"></script>
+</body>
+</html>
